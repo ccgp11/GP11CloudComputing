@@ -15,7 +15,6 @@ import java.io.IOException;
 /**
  * @ClassName: YoutuberRankingByRating
  * @Description: The MapReduce program that gets the ranking of uploaders by avg video rating
- * @Date: 2024/4/24 23:15
  */
 
 

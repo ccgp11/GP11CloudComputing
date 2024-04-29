@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>example</groupId>
+  <artifactId>junit5-maven</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <dependencies>
+  	<dependency>
+  		<groupId>averagerating_youtube</groupId>
+  		<artifactId>AverageRating_Youtube</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.neu.bigdata</groupId>
+  		<artifactId>FollowerRecommendation</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>youtubeuploader</groupId>
+  		<artifactId>youtubeuploader</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+	 <groupId>org.apache.hadoop</groupId>
+	 <artifactId>hadoop-client</artifactId>
+	 <version>3.3.6</version>
+	</dependency>
+  </dependencies>
+</project>

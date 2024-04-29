@@ -17,7 +17,6 @@ import org.apache.hadoop.fs.Path;
 /**
  * @ClassName: BestYoutubeUploader
  * @Description: Obtain the best uploader in dataset
- * @Date: 2024/4/24 23:01
  */
 
 
@@ -26,17 +25,16 @@ public class BestYoutubeUploader {
 
     public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
 
-        private Text uploader = new Text();
-        private final static IntWritable occurance = new IntWritable(1);
+        private Text videoCreator = new Text();
+        private static final IntWritable one = new IntWritable(1);
 
         @Override
-        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            String record = value.toString();
-            String str[] = record.split(",");
-            if (str.length >= 7) {
-                uploader.set(str[1]);
+        public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
+            String[] videoDetails = value.toString().split(",");
+            if (videoDetails.length > 6) {
+                videoCreator.set(videoDetails[1]);
             }
-            context.write(uploader, occurance);
+            context.write(videoCreator, one);
         }
     }
 
@@ -44,11 +42,12 @@ public class BestYoutubeUploader {
 
         @Override
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            int totaloccurance = 0;
+            int total_count = 0;
             for (IntWritable value : values) {
-                totaloccurance += value.get();
+                total_count = total_count + value.get();
             }
-            context.write(key, new IntWritable(totaloccurance));
+
+            context.write(key, new IntWritable(total_count));
         }
     }
 

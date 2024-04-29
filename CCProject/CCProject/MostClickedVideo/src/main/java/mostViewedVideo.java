@@ -16,8 +16,8 @@ import java.util.AbstractMap.SimpleEntry;
 import java.io.IOException;
 
 /**
- * @ClassName: Driver
- * @Description: The main entrance of ranking program
+ * @ClassName: mostViewedVideo
+ * @Description: Ranking videos by viewed counts
  * @Date: 2024/4/24 21:04
  */
 

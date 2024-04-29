@@ -17,8 +17,7 @@ import java.io.IOException;
 
 /**
  * @ClassName: mostViewedVideo
- * @Description: Ranking videos by viewed counts
- * @Date: 2024/4/24 21:04
+ * @Description: Obtain the most viewed videos
  */
 
 
@@ -35,14 +34,16 @@ public class mostViewedVideo {
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             // split by comma
-            String line = value.toString();
-            String str[] = line.split(",");
+            String s = value.toString();
+            String str[] = s.split(",");
             if(str.length>=5){
                 vid_name.set(str[0]);
+
                 try {
-                    float temp = Float.parseFloat(str[5]);
-                    views.set(temp);
+                    float parsed = Float.parseFloat(str[5]);
+                    views.set(parsed);
                     context.write(vid_name,views);
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }

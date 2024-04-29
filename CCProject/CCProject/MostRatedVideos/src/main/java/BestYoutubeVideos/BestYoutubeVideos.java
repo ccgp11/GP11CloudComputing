@@ -1,4 +1,5 @@
 package BestYoutubeVideos;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
@@ -13,78 +14,72 @@ import java.util.*;
 
 /**
  * @ClassName: BestYoutubeVideos
- * @Description: Ranking videos by rate counts
- * @Date: 2024/4/24 23:07
+ * @Description: This class ranks YouTube videos by their ratings using MapReduce
  */
 public class BestYoutubeVideos {
 
-    public static class Map extends Mapper<Object, Text, Text, FloatWritable> {
-        private FloatWritable video_rating = new FloatWritable();
-        private Text vid_id = new Text();
-        public void map(Object key, Text value, Mapper.Context context
-        ) throws IOException, InterruptedException {
-            String[] fields = value.toString().split(",");
-            vid_id = new Text(fields[0]);
+    public static class MapStage extends Mapper<Object, Text, Text, FloatWritable> {
+        private Text videoId = new Text();
+        private FloatWritable rating = new FloatWritable();
+
+        @Override
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] data = value.toString().split(",");
+            videoId.set(data[0]);
             try {
-                if(fields.length > 6) {
-                    video_rating = new FloatWritable(Float.parseFloat(fields[7]));
+                if (data.length > 6) {
+                    rating.set(Float.parseFloat(data[7]));
                 }
-                context.write(vid_id, video_rating);
-            }catch (Exception e) {
-                e.printStackTrace();
+                context.write(videoId, rating);
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid rating: " + data[7]);
             }
         }
     }
 
-    public static class Reduce extends Reducer<Text, FloatWritable, Text, FloatWritable> {
-        private java.util.Map<Text, FloatWritable> countMap = new HashMap<>();
+    public static class ReduceStage extends Reducer<Text, FloatWritable, Text, FloatWritable> {
+        private Map<Text, FloatWritable> videoRatings = new HashMap<>();
 
         @Override
         public void reduce(Text key, Iterable<FloatWritable> values, Context context) throws IOException, InterruptedException {
+            float total = 0;
             int count = 0;
-            float sum = 0;
-            for (FloatWritable val : values) {
-                sum += val.get();
+            for (FloatWritable value : values) {
+                total += value.get();
                 count++;
             }
-            countMap.put(new Text(key), new FloatWritable(sum / count));
+            videoRatings.put(new Text(key), new FloatWritable(total / count));
         }
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
-            java.util.Map<Text, FloatWritable> sortedMap = sortByValues(countMap);
-
-            int counter = 0;
-            for (Text key : sortedMap.keySet()) {
-                if (counter++ == 50) {
-                    break;
-                }
-                context.write(key, sortedMap.get(key));
+            Map<Text, FloatWritable> sortedRatings = sortRatings(videoRatings);
+            int limit = 50;
+            int numWritten = 0;
+            for (Map.Entry<Text, FloatWritable> entry : sortedRatings.entrySet()) {
+                if (numWritten++ == limit) break;
+                context.write(entry.getKey(), entry.getValue());
             }
         }
     }
 
-    private static <K extends Comparable, V extends Comparable> java.util.Map<K, V> sortByValues(java.util.Map<K, V> map) {
-        List<java.util.Map.Entry<K, V>> entries = new LinkedList<java.util.Map.Entry<K, V>>(map.entrySet());
-        Collections.sort(entries, new Comparator<java.util.Map.Entry<K, V>>() {
-            @Override
-            public int compare(java.util.Map.Entry<K, V> o1, java.util.Map.Entry<K, V> o2) {
-                return o2.getValue().compareTo(o1.getValue());
-            }
-        });
-        java.util.Map<K, V> sorted = new LinkedHashMap<K, V>();
-        for (java.util.Map.Entry<K, V> entry : entries) {
-            sorted.put(entry.getKey(), entry.getValue());
+    private static Map<Text, FloatWritable> sortRatings(Map<Text, FloatWritable> ratings) {
+        List<Map.Entry<Text, FloatWritable>> list = new ArrayList<>(ratings.entrySet());
+        list.sort(Map.Entry.comparingByValue(Collections.reverseOrder()));
+
+        Map<Text, FloatWritable> result = new LinkedHashMap<>();
+        for (Map.Entry<Text, FloatWritable> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
         }
-        return sorted;
+        return result;
     }
 
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "BestYoutubeVideos");
+        Configuration config = new Configuration();
+        Job job = Job.getInstance(config, "BestYoutubeVideos");
         job.setJarByClass(BestYoutubeVideos.class);
-        job.setMapperClass(Map.class);
-        job.setReducerClass(Reduce.class);
+        job.setMapperClass(MapStage.class);
+        job.setReducerClass(ReduceStage.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(FloatWritable.class);
         job.setNumReduceTasks(1);

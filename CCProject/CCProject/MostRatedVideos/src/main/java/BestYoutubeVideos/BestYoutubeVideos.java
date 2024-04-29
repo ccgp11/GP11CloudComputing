@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @ClassName: BestYoutuber
- * @Description: MapReduce program that obtain the best YouTube video ranking
+ * @ClassName: BestYoutubeVideos
+ * @Description: Ranking videos by rate counts
  * @Date: 2024/4/24 23:07
  */
 public class BestYoutubeVideos {
